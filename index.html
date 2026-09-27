@@ -82,19 +82,14 @@
 </main>
 <nav class="bottom"><button class="active" onclick="location.hash='find'">⌕<br>Find</button><button onclick="location.hash='community'">◈<br>Community</button><button onclick="location.hash='profile'">◉<br>Profile</button></nav>
 <div class="modal" id="modal"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><div class="eyebrow">FOCUSED INVITE</div><h2 id="modalName">Invite player</h2><p class="muted">Tell them the map, mode and play window so the ask is clear.</p><label class="field" style="display:block;margin:10px 0"><input id="inviteText" value="Premier · Mirage · 19:00–22:00"></label><button class="searchbtn" style="width:100%;height:46px" onclick="sendInvite()">SEND INVITE</button></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASE_URL = "https://jopsxumcrnvfwwwtzujg.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://jopsxumcrnvfwwwtzujg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvcHN4dW1jcm52Znd3d3R6dWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1MDk1MzksImV4cCI6MjEwNjA4NTUzOX0.FzL9MCew7CvCwUtUJY39QfnWB_oB_V3UxrhSyAc2OKo";
-
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
-</script>
-<script>
-const data=[
 const data=[
 {name:"Shadow",flag:"🇧🇬",country:"🇧🇬 Bulgaria",lang:"Bulgarian",role:"Entry",rating:18420,online:true,tag:"Rifler"},
 {name:"Kiro",flag:"🇩🇪",country:"🇩🇪 Germany",lang:"English",role:"Support",rating:19210,online:true,tag:"Anchor"},
@@ -103,47 +98,60 @@ const data=[
 {name:"Lumi",flag:"🇫🇷",country:"🇫🇷 France",lang:"French",role:"Flex",rating:18890,online:false,tag:"Flex"},
 {name:"Archer",flag:"🇬🇧",country:"🇬🇧 United Kingdom",lang:"English",role:"Entry",rating:21430,online:true,tag:"Rifler"}
 ];
-function render(list=data){document.getElementById('players').innerHTML=list.map((p,i)=>`<article class="player"><div class="playertop"><div class="pavatar">${p.name[0]}</div><div style="flex:1"><div class="name">${p.name} <span class="flag">${p.flag}</span></div><div class="muted">${p.country.replace(p.flag,'').trim()} · ${p.lang}</div></div><div class="online">${p.online?'● ONLINE':'OFFLINE'}</div></div><div class="tags"><span class="tag">${p.role}</span><span class="tag">${p.tag}</span><span class="tag">Mic ON</span><span class="tag">Steam ✓</span></div><div class="rating"><div><div class="muted">Premier</div><b>${p.rating.toLocaleString()}</b></div><button class="invite" onclick="invite('${p.name}')">INVITE</button></div></article>`).join('')}
-function filterPlayers(){let q=document.getElementById('q').value.toLowerCase(),role=document.getElementById('role').value,c=document.getElementById('country').value,lang=document.getElementById('language').value;render(data.filter(p=>(!q||p.name.toLowerCase().includes(q))&&(!role||p.role===role)&&(!c||p.country===c)&&(!lang||p.lang===lang)))}
-function invite(n){document.getElementById('modalName').textContent='Invite '+n;document.getElementById('modal').classList.add('show')}
-function closeModal(){document.getElementById('modal').classList.remove('show')}
-function sendInvite(){closeModal();alert('Invite sent! In the full version this will create a real notification and party room.')}
-  function openAuth(){
-  document.getElementById('authBox').style.display='flex';
+function render(list=data){
+document.getElementById('players').innerHTML=list.map((p,i)=>`<article class="player"><div class="playertop"><div class="pavatar">${p.name[0]}</div><div style="flex:1"><div class="name">${p.name} <span class="flag">${p.flag}</span></div><div class="muted">${p.country.replace(p.flag,'').trim()} · ${p.lang}</div></div><div class="online">${p.online?'● ONLINE':'OFFLINE'}</div></div><div class="tags"><span class="tag">${p.role}</span><span class="tag">${p.tag}</span><span class="tag">Mic ON</span><span class="tag">Steam ✓</span></div><div class="rating"><div><div class="muted">Premier</div><b>${p.rating.toLocaleString()}</b></div><button class="invite" onclick="invite('${p.name}')">INVITE</button></div></article>`).join('')
 }
-
+function filterPlayers(){
+let q=document.getElementById('q').value.toLowerCase(),
+role=document.getElementById('role').value,
+c=document.getElementById('country').value,
+lang=document.getElementById('language').value;
+render(data.filter(p=>
+(!q||p.name.toLowerCase().includes(q))&&
+(!role||p.role===role)&&
+(!c||p.country===c)&&
+(!lang||p.lang===lang)
+))
+}
+function invite(n){
+document.getElementById('modalName').textContent='Invite '+n;
+document.getElementById('modal').classList.add('show')
+}
+function closeModal(){
+document.getElementById('modal').classList.remove('show')
+}
+function sendInvite(){
+closeModal();
+alert('Invite sent! In the full version this will create a real notification and party room.')
+}
+function openAuth(){
+document.getElementById('authBox').style.display='flex';
+}
 function closeAuth(){
-  document.getElementById('authBox').style.display='none';
+document.getElementById('authBox').style.display='none';
 }
-
 async function register(){
-  const email=document.getElementById('email').value.trim();
-  const password=document.getElementById('password').value;
-
-  const {error}=await supabaseClient.auth.signUp({
-    email:email,
-    password:password
-  });
-
-  document.getElementById('authMessage').textContent=
-    error ? error.message : 'Registration successful! Check your email if confirmation is required.';
+const email=document.getElementById('email').value.trim();
+const password=document.getElementById('password').value;
+const {error}=await supabaseClient.auth.signUp({
+email:email,
+password:password
+});
+document.getElementById('authMessage').textContent=
+error ? error.message : 'Registration successful! Check your email if confirmation is required.';
 }
-
 async function login(){
-  const email=document.getElementById('email').value.trim();
-  const password=document.getElementById('password').value;
-
-  const {error}=await supabaseClient.auth.signInWithPassword({
-    email:email,
-    password:password
-  });
-
-  document.getElementById('authMessage').textContent=
-    error ? error.message : 'Login successful!';
-
-  if(!error){
-    closeAuth();
-  }
+const email=document.getElementById('email').value.trim();
+const password=document.getElementById('password').value;
+const {error}=await supabaseClient.auth.signInWithPassword({
+email:email,
+password:password
+});
+document.getElementById('authMessage').textContent=
+error ? error.message : 'Login successful!';
+if(!error){
+closeAuth();
+}
 }
 render();
 </script>
